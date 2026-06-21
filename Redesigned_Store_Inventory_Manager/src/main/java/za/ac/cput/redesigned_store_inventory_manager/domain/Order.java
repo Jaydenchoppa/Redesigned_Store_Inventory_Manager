@@ -3,7 +3,7 @@ package za.ac.cput.redesigned_store_inventory_manager.domain;
 /* Order.java
 Order POJO
 Author: Matthew Ferreira (230048870)
-Date: 14 March 2026*/
+Date: 21 March 2026*/
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -15,7 +15,7 @@ public class Order {
     private String customerId;
     private String orderDate;
     private String deliveryDate;
-    double totalAmount;
+    private double totalAmount;
     private String status;
     private String item;
 
