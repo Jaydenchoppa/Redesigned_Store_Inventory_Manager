@@ -5,23 +5,19 @@ Category class
 Author: Jayden Avontuur (222032278)
 Date: 21 June 2026*/
 
-import jakarta.persistence.*;
+import jakarta.persistence.Embeddable;
 
 @Embeddable
 public class Category {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String categoryId;
     private String name;
     private String description;
 
-    protected Category() {
-    }
+    protected Category() {}
 
-
-    public String getCategoryId() {
-        return categoryId;
+    private Category(Builder builder) {
+        this.name = builder.name;
+        this.description = builder.description;
     }
 
     public String getName() {
@@ -32,29 +28,32 @@ public class Category {
         return description;
     }
 
-    private Category(Builder builder) {
-        this.categoryId = builder.categoryId;
-        this.name = builder.name;
-        this.description = builder.description;
+    @Override
+    public String toString() {
+        return "Category{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 
     public static class Builder {
 
-        private String categoryId;
         private String name;
         private String description;
 
-        public Builder(String categoryId, String name) {
-            this.categoryId = categoryId;
+        public Builder(String name) {
             this.name = name;
         }
 
-        public Builder setDescription(String description) {
+        public Builder description(String description) {
             this.description = description;
             return this;
         }
 
         public Category build() {
+
+            if (name == null || name.isEmpty()) return null;
+
             return new Category(this);
         }
     }
