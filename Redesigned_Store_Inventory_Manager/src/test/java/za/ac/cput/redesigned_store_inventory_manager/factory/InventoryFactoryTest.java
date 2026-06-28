@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class InventoryFactoryTest {
 
     @Test
-    void createInventory() {
+    public void createInventory() {
 
         Product product = new Product();
         Category category = CategoryFactory.createCategory(
@@ -37,7 +37,7 @@ class InventoryFactoryTest {
     }
 
     @Test
-    void createInventory_InvalidQuantity() {
+   public void createInventory_InvalidQuantity() {
 
         Product product = new Product();
         Category category = CategoryFactory.createCategory("Electronics", "Devices");
