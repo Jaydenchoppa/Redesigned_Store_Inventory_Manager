@@ -32,8 +32,8 @@ public class ClientApp {
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
 
-    private String authHeader;   // "Basic xxxx", set after a successful login
-    private String role;        // "ROLE_EMPLOYEE" or "ROLE_CUSTOMER"
+    private String authHeader;
+    private String role;
 
     public ClientApp() {
         httpClient = HttpClient.newHttpClient();
