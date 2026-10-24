@@ -7,6 +7,7 @@ Date: 21 June 2026*/
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 public class Customer {
@@ -21,6 +22,8 @@ public class Customer {
     private String postalCode;
     private String country;
     private String username;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     protected Customer() {}

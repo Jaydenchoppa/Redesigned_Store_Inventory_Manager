@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import za.ac.cput.redesigned_store_inventory_manager.domain.Employee;
 import za.ac.cput.redesigned_store_inventory_manager.service.EmployeeService;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 
 @RestController
@@ -19,10 +19,12 @@ import java.util.List;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(EmployeeService employeeService, PasswordEncoder passwordEncoder) {
         this.employeeService = employeeService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/getAll")
@@ -32,7 +34,16 @@ public class EmployeeController {
 
     @PostMapping("/save")
     public Employee save(@RequestBody Employee employee) {
-        return employeeService.save(employee);
+        String hashed = employee.getPassword() == null
+                ? null
+                : passwordEncoder.encode(employee.getPassword());
+
+        Employee toSave = new Employee.Builder()
+                .copy(employee)
+                .setId(null)
+                .setPassword(hashed)
+                .build();
+        return employeeService.save(toSave);
     }
 
     @GetMapping("/read")
@@ -42,9 +53,17 @@ public class EmployeeController {
 
     @PutMapping("/update")
     public Employee update(@RequestBody Employee employee) {
-        return employeeService.save(employee);
+        Employee existing = employeeService.findById(employee.getId()).orElse(null);
+        if (existing == null) {
+            return null;
+        }
+        Employee updated = new Employee.Builder()
+                .copy(employee)
+                .setUsername(existing.getUsername())
+                .setPassword(existing.getPassword())
+                .build();
+        return employeeService.save(updated);
     }
-
     @DeleteMapping("/delete")
     public void delete(@RequestParam Long id) {
         employeeService.deleteById(id);

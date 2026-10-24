@@ -8,6 +8,7 @@ package za.ac.cput.redesigned_store_inventory_manager.domain;
  */
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 public class Employee {
@@ -21,6 +22,7 @@ public class Employee {
     private String position;
     private double salary;
     private String username;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     protected Employee() {}
@@ -32,6 +34,7 @@ public class Employee {
         this.salary = builder.salary;
         this.username = builder.username;
         this.password = builder.password;
+        this.id = builder.id;
     }
 
     public Long getId() {
@@ -81,6 +84,7 @@ public class Employee {
         private String position;
         private double salary;
         private String username;
+        private Long id;
         private String password;
 
         public Builder setEmployeeId(String employeeId) {
@@ -110,6 +114,22 @@ public class Employee {
 
         public Builder setPassword(String password) {
             this.password = password;
+            return this;
+        }
+
+        public Builder setId(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder copy(Employee employee) {
+            this.id = employee.getId();
+            this.employeeId = employee.getEmployeeId();
+            this.employeeName = employee.getEmployeeName();
+            this.position = employee.getPosition();
+            this.salary = employee.getSalary();
+            this.username = employee.getUsername();
+            this.password = employee.getPassword();
             return this;
         }
 
