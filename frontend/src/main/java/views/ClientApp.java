@@ -2,9 +2,7 @@ package views;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import domain.Customer;
-import domain.Inventory;
-import domain.Order;
+import domain.*;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -26,18 +24,24 @@ public class ClientApp {
     private static final String CUSTOMER_URL = "http://localhost:8080/api/customers";
     private static final String ORDER_URL = "http://localhost:8080/api/orders";
     private static final String PURCHASE_URL = "http://localhost:8080/api/purchase";
+    private static final String STORE_URL = "http://localhost:8080/api/stores";
+    private static final String PRODUCT_URL = "http://localhost:8080/api/products";
+    private static final String SUPPLIER_URL = "http://localhost:8080/api/v1/supplier";
+    private static final String EMPLOYEE_URL = "http://localhost:8080/api/v1/employee";
 
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
 
-    private String authHeader;
-    private String role;
+    private String authHeader;   // "Basic xxxx", set after a successful login
+    private String role;        // "ROLE_EMPLOYEE" or "ROLE_CUSTOMER"
 
     public ClientApp() {
         httpClient = HttpClient.newHttpClient();
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
+
+    // ---------- helpers ---------- //
 
     private HttpRequest.Builder newRequest(String url) {
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(url));
@@ -59,6 +63,8 @@ public class ClientApp {
     public String getRole() { return role; }
     public boolean isEmployee() { return "ROLE_EMPLOYEE".equals(role); }
     public void logout() { authHeader = null; role = null; }
+
+    // ---------- login / register ---------- //
 
     public boolean authenticateUser(String username, String password) {
         return login(AUTH_URL + "/login", username, password, "ROLE_EMPLOYEE");
@@ -112,7 +118,7 @@ public class ClientApp {
         }
     }
 
-    // customer sign-up is public, so no Authorization header
+    // customer sign-up
     public boolean registerCustomer(String firstName, String surname, String email, String username, String password) {
         try {
             String json = String.format(
@@ -227,6 +233,89 @@ public class ClientApp {
 
     public void deleteOrder(String orderNum) throws Exception {
         HttpRequest request = newRequest(ORDER_URL + "/" + orderNum).DELETE().build();
+        HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+        check(response);
+    }
+
+    // ---------- stores ---------- //
+
+    public List<Store> getAllStores() throws Exception {
+        HttpRequest request = newRequest(STORE_URL).GET().build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        check(response);
+        return mapper.readValue(response.body(),
+                mapper.getTypeFactory().constructCollectionType(List.class, Store.class));
+    }
+
+    // ---------- products ---------- //
+
+    public List<Product> getAllProducts() throws Exception {
+        HttpRequest request = newRequest(PRODUCT_URL).GET().build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        check(response);
+        return mapper.readValue(response.body(),
+                mapper.getTypeFactory().constructCollectionType(List.class, Product.class));
+    }
+
+    // ---------- suppliers ---------- //
+
+    public List<Supplier> getAllSuppliers() throws Exception {
+        HttpRequest request = newRequest(SUPPLIER_URL + "/getAll").GET().build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        check(response);
+        return mapper.readValue(response.body(),
+                mapper.getTypeFactory().constructCollectionType(List.class, Supplier.class));
+    }
+
+    public Supplier createSupplier(Supplier supplier) throws Exception {
+        String json = mapper.writeValueAsString(supplier);
+        HttpRequest request = newRequest(SUPPLIER_URL + "/save")
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        check(response);
+
+        if (response.statusCode() != 200 && response.statusCode() != 201) {
+            throw new Exception("Failed to add supplier. Server returned " + response.statusCode());
+        }
+        return mapper.readValue(response.body(), Supplier.class);
+    }
+
+    public void deleteSupplier(String id) throws Exception {
+        HttpRequest request = newRequest(SUPPLIER_URL + "/delete?SupplierId=" + id).DELETE().build();
+        HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+        check(response);
+    }
+
+    // ---------- employees ---------- //
+
+    public List<Employee> getAllEmployees() throws Exception {
+        HttpRequest request = newRequest(EMPLOYEE_URL + "/getAll").GET().build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        check(response);
+        return mapper.readValue(response.body(),
+                mapper.getTypeFactory().constructCollectionType(List.class, Employee.class));
+    }
+
+    public Employee createEmployee(Employee employee) throws Exception {
+        String json = mapper.writeValueAsString(employee);
+        HttpRequest request = newRequest(EMPLOYEE_URL + "/save")
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        check(response);
+
+        if (response.statusCode() != 200 && response.statusCode() != 201) {
+            throw new Exception("Failed to add employee. Server returned " + response.statusCode());
+        }
+        return mapper.readValue(response.body(), Employee.class);
+    }
+
+    // The backend's delete takes @RequestParam Long id, so the parameter must be "id"
+    public void deleteEmployee(String id) throws Exception {
+        HttpRequest request = newRequest(EMPLOYEE_URL + "/delete?id=" + id).DELETE().build();
         HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
         check(response);
     }

@@ -1,18 +1,16 @@
 package za.ac.cput.redesigned_store_inventory_manager.service;
-
+/**
+ *
+ * @author Zacharia Dipudi
+ */
 import org.springframework.stereotype.Service;
 import za.ac.cput.redesigned_store_inventory_manager.domain.Product;
 import za.ac.cput.redesigned_store_inventory_manager.repository.ProductRepository;
 
 import java.util.List;
 import java.util.Optional;
-
-/**
- *
- * @author Zacharia Dipudi
- */
 @Service
-public class ProductService implements IProductService {
+public class ProductService implements IProductService{
     private final ProductRepository productRepository;
 
     public ProductService(ProductRepository productRepository) {
@@ -21,13 +19,12 @@ public class ProductService implements IProductService {
 
     @Override
     public Product save(Product product) {
-        if (product == null) return null;
         return productRepository.save(product);
     }
 
     @Override
     public Optional<Product> findById(String productId) {
-        if (productId == null) return Optional.empty();
+        if(productId==null) return Optional.empty();
         return productRepository.findById(productId);
     }
 
@@ -38,13 +35,17 @@ public class ProductService implements IProductService {
 
     @Override
     public void deleteById(String productId) {
-        if (productId == null) return;
+        if(productId==null)return;
         productRepository.deleteById(productId);
+
     }
 
     @Override
     public boolean existsById(String productId) {
-        if (productId == null) return false;
+        if(productId==null)return  false;
         return productRepository.existsById(productId);
     }
 }
+
+
+
