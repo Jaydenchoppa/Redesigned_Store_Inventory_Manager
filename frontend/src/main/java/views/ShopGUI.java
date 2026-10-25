@@ -41,14 +41,16 @@ public class ShopGUI extends JFrame {
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
         top.add(new JLabel("Category:"));
         top.add(comboCategory);
+        top.add(Box.createHorizontalStrut(30));
+        top.add(new JLabel("Logged in as: " + customerUsername));
 
         JPanel bottom = new JPanel(new FlowLayout());
         bottom.add(new JLabel("Quantity:"));
         bottom.add(spinnerQuantity);
         JButton btnBuy = new JButton("Buy");
-        JButton btnBackToLogin = new JButton("Back to Login");
+        JButton btnLogout = new JButton("Log out");
         bottom.add(btnBuy);
-        bottom.add(btnBackToLogin);
+        bottom.add(btnLogout);
 
         setLayout(new BorderLayout());
         add(top, BorderLayout.NORTH);
@@ -57,10 +59,7 @@ public class ShopGUI extends JFrame {
 
         comboCategory.addActionListener(e -> applyFilter());
         btnBuy.addActionListener(e -> buySelected());
-        btnBackToLogin.addActionListener(e -> {
-            dispose();
-            new LoginGUI(client).setGUI();
-        });
+        btnLogout.addActionListener(e -> client.logoutAndShowLogin());
 
         setSize(700, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -135,21 +134,20 @@ public class ShopGUI extends JFrame {
             return;
         }
 
-        new SwingWorker<Boolean, Void>() {
-            protected Boolean doInBackground() throws Exception {
-                return client.purchase(customerUsername, selectedItem.getInventoryId(), quantity);
+        new SwingWorker<Void, Void>() {
+            protected Void doInBackground() throws Exception {
+                client.purchase(customerUsername, selectedItem.getInventoryId(), quantity);
+                return null;
             }
             protected void done() {
                 try {
-                    if (get()) {
-                        JOptionPane.showMessageDialog(ShopGUI.this, "Purchase successful!");
-                        loadInventory();
-                    } else {
-                        JOptionPane.showMessageDialog(ShopGUI.this, "Purchase failed. Not enough stock.");
-                    }
+                    get();
+                    JOptionPane.showMessageDialog(ShopGUI.this, "Purchase successful!");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(ShopGUI.this, "Purchase failed: " + ex.getMessage());
+                    Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                    JOptionPane.showMessageDialog(ShopGUI.this, "Purchase failed: " + cause.getMessage());
                 }
+                loadInventory(); // refresh stock either way
             }
         }.execute();
     }

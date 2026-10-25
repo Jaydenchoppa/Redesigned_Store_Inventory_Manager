@@ -13,8 +13,7 @@ import java.awt.*;
 
 public class CustomerFormDialog extends JDialog {
 
-    private JTextField txtFirstName, txtSurname, txtEmail, txtPhoneNumber,
-            txtAddress, txtCity, txtPostalCode, txtCountry;
+    private JTextField txtFirstName, txtSurname, txtEmail;
     private JButton btnSave, btnCancel;
     private ClientApp client;
     private Runnable onSuccess;
@@ -24,25 +23,16 @@ public class CustomerFormDialog extends JDialog {
         this.client = client;
         this.onSuccess = onSuccess;
 
-        JPanel form = new JPanel(new GridLayout(8, 2, 5, 5));
+        JPanel form = new JPanel(new GridLayout(3, 2, 5, 5));
+        form.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
 
         txtFirstName = new JTextField();
         txtSurname = new JTextField();
         txtEmail = new JTextField();
-        txtPhoneNumber = new JTextField();
-        txtAddress = new JTextField();
-        txtCity = new JTextField();
-        txtPostalCode = new JTextField();
-        txtCountry = new JTextField();
 
         form.add(new JLabel("First Name:")); form.add(txtFirstName);
         form.add(new JLabel("Surname:")); form.add(txtSurname);
         form.add(new JLabel("Email:")); form.add(txtEmail);
-        form.add(new JLabel("Phone Number:")); form.add(txtPhoneNumber);
-        form.add(new JLabel("Address:")); form.add(txtAddress);
-        form.add(new JLabel("City:")); form.add(txtCity);
-        form.add(new JLabel("Postal Code:")); form.add(txtPostalCode);
-        form.add(new JLabel("Country:")); form.add(txtCountry);
 
         JPanel buttons = new JPanel();
         btnSave = new JButton("Save");
@@ -53,23 +43,28 @@ public class CustomerFormDialog extends JDialog {
         this.setLayout(new BorderLayout());
         this.add(form, BorderLayout.CENTER);
         this.add(buttons, BorderLayout.SOUTH);
-        this.setSize(400, 400);
+        this.setSize(400, 200);
         this.setLocationRelativeTo(parent);
 
         btnSave.addActionListener(e -> save());
         btnCancel.addActionListener(e -> dispose());
+        getRootPane().setDefaultButton(btnSave);
     }
 
     private void save() {
+        String firstName = txtFirstName.getText().trim();
+        String surname = txtSurname.getText().trim();
+        String email = txtEmail.getText().trim();
+
+        if (firstName.isEmpty() || surname.isEmpty() || email.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill in first name, surname and email.");
+            return;
+        }
+
         Customer customer = new Customer();
-        customer.setFirstName(txtFirstName.getText().trim());
-        customer.setSurname(txtSurname.getText().trim());
-        customer.setEmail(txtEmail.getText().trim());
-        customer.setPhoneNumber(txtPhoneNumber.getText().trim());
-        customer.setAddress(txtAddress.getText().trim());
-        customer.setCity(txtCity.getText().trim());
-        customer.setPostalCode(txtPostalCode.getText().trim());
-        customer.setCountry(txtCountry.getText().trim());
+        customer.setFirstName(firstName);
+        customer.setSurname(surname);
+        customer.setEmail(email);
 
         new SwingWorker<Void, Void>() {
             protected Void doInBackground() throws Exception {
@@ -77,8 +72,14 @@ public class CustomerFormDialog extends JDialog {
                 return null;
             }
             protected void done() {
-                onSuccess.run();
-                dispose();
+                try {
+                    get();
+                    onSuccess.run();
+                    dispose();
+                } catch (Exception ex) {
+                    String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+                    JOptionPane.showMessageDialog(CustomerFormDialog.this, message, "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }.execute();
     }

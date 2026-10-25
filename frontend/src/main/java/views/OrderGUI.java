@@ -52,7 +52,7 @@ public class OrderGUI extends JFrame implements ActionListener {
 
         this.setSize(800, 450);
         this.setVisible(true);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setLocationRelativeTo(null);
 
         loadOrders();

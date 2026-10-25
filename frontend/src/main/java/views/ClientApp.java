@@ -34,14 +34,13 @@ public class ClientApp {
 
     private String authHeader;
     private String role;
+    private String lastError = "";
 
     public ClientApp() {
         httpClient = HttpClient.newHttpClient();
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
-
-    // ---------- helpers ---------- //
 
     private HttpRequest.Builder newRequest(String url) {
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(url));
@@ -60,11 +59,28 @@ public class ClientApp {
         }
     }
 
+    private static String serverMessage(HttpResponse<String> response, String fallback) {
+        String body = response.body() == null ? "" : response.body().trim();
+        return body.isEmpty() || body.startsWith("{") ? fallback : body;
+    }
+
     public String getRole() { return role; }
     public boolean isEmployee() { return "ROLE_EMPLOYEE".equals(role); }
     public void logout() { authHeader = null; role = null; }
+    public String getLastError() { return lastError; }
 
-    // ---------- login / register ---------- //
+    public void logoutAndShowLogin() {
+        logout();
+        LoginGUI login = new LoginGUI(this);
+        login.setGUI();
+        for (java.awt.Window w : java.awt.Window.getWindows()) {
+            if (w != login && w.isShowing()) {
+                w.dispose();
+            }
+        }
+    }
+
+    // Login and register methods
 
     public boolean authenticateUser(String username, String password) {
         return login(AUTH_URL + "/login", username, password, "ROLE_EMPLOYEE");
@@ -77,6 +93,7 @@ public class ClientApp {
     private boolean login(String url, String username, String password, String expectedRole) {
         authHeader = null;
         role = null;
+        lastError = "";
         try {
             String credentials = username + ":" + password;
             String header = "Basic " + Base64.getEncoder()
@@ -90,51 +107,54 @@ public class ClientApp {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             String returnedRole = response.body() == null ? "" : response.body().trim();
-            if (response.statusCode() == 200 && expectedRole.equals(returnedRole)) {
-                authHeader = header;
-                role = returnedRole;
-                return true;
+            if (response.statusCode() == 200) {
+                if (expectedRole.equals(returnedRole)) {
+                    authHeader = header;
+                    role = returnedRole;
+                    return true;
+                }
+                lastError = "ROLE_CUSTOMER".equals(returnedRole)
+                        ? "That is a customer account. Select \"Customer\" and try again."
+                        : "That is an employee account. Select \"Employee\" and try again.";
+                return false;
             }
+            lastError = "Invalid username or password.";
+            return false;
+        } catch (java.io.IOException e) {
+            lastError = "Cannot reach the server. Make sure the backend is running on port 8080.";
             return false;
         } catch (Exception e) {
             e.printStackTrace();
+            lastError = "Login failed: " + e.getMessage();
             return false;
         }
     }
 
-    // employee registration
-    public boolean registerUser(String username, String email, String password) {
+    // customer sign-up - throws with the server's message so the form can show it
+    public void registerCustomer(String firstName, String surname, String email,
+                                 String username, String password) throws Exception {
+        String json = mapper.writeValueAsString(java.util.Map.of(
+                "firstName", firstName,
+                "surname", surname,
+                "email", email,
+                "username", username,
+                "password", password));
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(CUSTOMER_AUTH_URL + "/register"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+        HttpResponse<String> response;
         try {
-            String json = mapper.writeValueAsString(new RegisterRequest(username, email, password));
-            HttpRequest request = newRequest(AUTH_URL + "/register")
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return response.statusCode() == 200 || response.statusCode() == 201;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (java.io.IOException e) {
+            throw new Exception("Cannot reach the server. Make sure the backend is running on port 8080.");
+        }
+        int code = response.statusCode();
+        if (code != 200 && code != 201) {
+            throw new Exception(serverMessage(response, "Sign up failed (server returned " + code + ")."));
         }
     }
-
-    // customer sign-up
-    public boolean registerCustomer(String firstName, String surname, String email, String username, String password) {
-        try {
-            String json = String.format(
-                    "{\"firstName\":\"%s\",\"surname\":\"%s\",\"email\":\"%s\",\"username\":\"%s\",\"password\":\"%s\"}",
-                    firstName, surname, email, username, password);
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(CUSTOMER_AUTH_URL + "/register"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build();
-            int code = httpClient.send(request, HttpResponse.BodyHandlers.ofString()).statusCode();
-            return code == 200 || code == 201;
-        } catch (Exception e) { e.printStackTrace(); return false; }
-    }
-
-    // ---------- inventory ---------- //
 
     public List<Inventory> getAllInventory() throws Exception {
         HttpRequest request = newRequest(INVENTORY_URL).GET().build();
@@ -167,23 +187,31 @@ public class ClientApp {
         HttpRequest request = newRequest(INVENTORY_URL + "/" + id).DELETE().build();
         HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
         check(response);
+        if (response.statusCode() >= 400) {
+            throw new Exception("Could not delete the item (server returned " + response.statusCode() + ").");
+        }
     }
 
-    // ---------- purchase ---------- //
 
-    public boolean purchase(String customerUsername, Long inventoryId, int quantity) throws Exception {
-        String json = String.format(
-                "{\"customerId\":\"%s\",\"inventoryId\":%d,\"quantity\":%d}",
-                customerUsername, inventoryId, quantity);
+    public void purchase(String customerUsername, Long inventoryId, int quantity) throws Exception {
+        String json = mapper.writeValueAsString(java.util.Map.of(
+                "customerId", customerUsername,
+                "inventoryId", inventoryId,
+                "quantity", quantity));
         HttpRequest request = newRequest(PURCHASE_URL)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        return response.statusCode() == 200;
+        check(response);
+        if (response.statusCode() != 200) {
+            String body = response.body() == null ? "" : response.body().trim();
+            throw new Exception(body.isEmpty()
+                    ? "Purchase failed (server returned " + response.statusCode() + ")."
+                    : body);
+        }
     }
 
-    // ---------- customers ---------- //
 
     public Customer createCustomer(Customer customer) throws Exception {
         String json = mapper.writeValueAsString(customer);
@@ -210,7 +238,6 @@ public class ClientApp {
         check(response);
     }
 
-    // ---------- orders ---------- //
 
     public List<Order> getAllOrders() throws Exception {
         HttpRequest request = newRequest(ORDER_URL).GET().build();
@@ -237,7 +264,6 @@ public class ClientApp {
         check(response);
     }
 
-    // ---------- stores ---------- //
 
     public List<Store> getAllStores() throws Exception {
         HttpRequest request = newRequest(STORE_URL).GET().build();
@@ -247,7 +273,6 @@ public class ClientApp {
                 mapper.getTypeFactory().constructCollectionType(List.class, Store.class));
     }
 
-    // ---------- products ---------- //
 
     public List<Product> getAllProducts() throws Exception {
         HttpRequest request = newRequest(PRODUCT_URL).GET().build();
@@ -257,7 +282,6 @@ public class ClientApp {
                 mapper.getTypeFactory().constructCollectionType(List.class, Product.class));
     }
 
-    // ---------- suppliers ---------- //
 
     public List<Supplier> getAllSuppliers() throws Exception {
         HttpRequest request = newRequest(SUPPLIER_URL + "/getAll").GET().build();
@@ -288,8 +312,6 @@ public class ClientApp {
         check(response);
     }
 
-    // ---------- employees ---------- //
-
     public List<Employee> getAllEmployees() throws Exception {
         HttpRequest request = newRequest(EMPLOYEE_URL + "/getAll").GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -308,26 +330,17 @@ public class ClientApp {
         check(response);
 
         if (response.statusCode() != 200 && response.statusCode() != 201) {
-            throw new Exception("Failed to add employee. Server returned " + response.statusCode());
+            throw new Exception(serverMessage(response, "Failed to add employee (server returned " + response.statusCode() + ")."));
         }
         return mapper.readValue(response.body(), Employee.class);
     }
 
-    // The backend's delete takes @RequestParam Long id, so the parameter must be "id"
-    public void deleteEmployee(String id) throws Exception {
+    public void deleteEmployee(Long id) throws Exception {
         HttpRequest request = newRequest(EMPLOYEE_URL + "/delete?id=" + id).DELETE().build();
-        HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         check(response);
-    }
-
-    private static class RegisterRequest {
-        public String username;
-        public String email;
-        public String password;
-        public RegisterRequest(String username, String email, String password) {
-            this.username = username;
-            this.email = email;
-            this.password = password;
+        if (response.statusCode() >= 400) {
+            throw new Exception(serverMessage(response, "Could not delete the employee (server returned " + response.statusCode() + ")."));
         }
     }
 

@@ -77,23 +77,23 @@ The `backend` and `frontend` modules are independent — the frontend communicat
 > The backend must be running before the frontend, since the Swing client depends on the API being reachable.
 
 ### First-time setup
-Since registration requires being logged in as an employee, and no employees exist on a fresh database, seed one directly via the H2 console:
+On first start the backend creates a default employee automatically (see `DataInitializer`):
 
-```sql
-INSERT INTO employee (employee_id, employee_name, position, salary, username, password)
-VALUES ('E001', 'Admin User', 'Manager', 0, 'admin', 'admin123');
-```
+- Username: `admin`
+- Password: `admin123`
 
-Log in with `admin` / `admin123` to access the Inventory screen, from which further employees can be registered through the app itself.
+Log in as an **Employee** with those details. **Change this default password in `DataInitializer` before sharing or deploying the project.** Passwords are stored BCrypt-hashed, so inserting a plaintext row through the H2 console will not work.
+
+Further employees are added from the Inventory screen via **Employees → Add** (username, password, name, position, salary). Customers sign up from the login screen. Every employee screen (Order History, Suppliers, Customers, Employees) is opened with the buttons across the top of the Inventory screen, and **Log out** returns to the login screen.
 
 ## API Overview
 
 | Endpoint | Purpose |
 |---|---|
-| `POST /api/auth/login`, `/register` | Employee authentication |
+| `POST /api/auth/login` | Employee login (returns the account's role) |
 | `POST /api/customer-auth/login`, `/register` | Customer authentication |
 | `GET / POST / PUT / DELETE /api/inventory` | Inventory CRUD |
 | `GET /api/orders` | Order history |
 | `POST /api/purchase` | Customer purchase (decrements stock, records an order) |
 | `GET / POST / DELETE /api/customers` | Customer records |
-| `GET / POST / DELETE /api/employees` | Employee records |
+| `GET /api/v1/employee/getAll`, `POST /save`, `DELETE /delete?id=` | Employee records and creation |

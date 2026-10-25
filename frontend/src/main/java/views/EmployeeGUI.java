@@ -33,7 +33,7 @@ public class EmployeeGUI extends JFrame implements ActionListener {
         pnlSouth = new JPanel();
 
         tableModel = new DefaultTableModel(new Object[]{
-                "ID", "Employee Name", "Position", "Salary"
+                "ID", "Username", "Name"
         }, 0) {
             public boolean isCellEditable(int row, int col) {
                 return false;
@@ -50,13 +50,11 @@ public class EmployeeGUI extends JFrame implements ActionListener {
     }
 
     public void setGUI() {
-
         pnlNorth.setLayout(new FlowLayout());
         pnlCenter.setLayout(new BorderLayout());
         pnlSouth.setLayout(new FlowLayout());
 
         pnlNorth.add(lblTitle);
-
         pnlCenter.add(new JScrollPane(table), BorderLayout.CENTER);
 
         pnlSouth.add(btnAdd);
@@ -71,7 +69,7 @@ public class EmployeeGUI extends JFrame implements ActionListener {
         btnDelete.addActionListener(this);
         btnRefresh.addActionListener(this);
 
-        this.setSize(700, 450);
+        this.setSize(600, 450);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setLocationRelativeTo(null);
@@ -80,7 +78,6 @@ public class EmployeeGUI extends JFrame implements ActionListener {
     }
 
     private void loadEmployees() {
-
         new SwingWorker<List<Employee>, Void>() {
 
             protected List<Employee> doInBackground() throws Exception {
@@ -88,28 +85,17 @@ public class EmployeeGUI extends JFrame implements ActionListener {
             }
 
             protected void done() {
-
                 try {
-
                     tableModel.setRowCount(0);
-
                     for (Employee employee : get()) {
-
                         tableModel.addRow(new Object[]{
-                                employee.getEmployeeId(),
-                                employee.getEmployeeName(),
-                                employee.getPosition(),
-                                employee.getSalary()
+                                employee.getId(),
+                                employee.getUsername(),
+                                employee.getEmployeeName()
                         });
                     }
-
                 } catch (Exception ex) {
-
-                    JOptionPane.showMessageDialog(
-                            EmployeeGUI.this,
-                            "Failed to load employees: "
-                                    + ex.getMessage()
-                    );
+                    JOptionPane.showMessageDialog(EmployeeGUI.this, "Failed to load employees: " + ex.getMessage());
                 }
             }
 
@@ -118,57 +104,43 @@ public class EmployeeGUI extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
         if (e.getSource() == btnRefresh) {
-
             loadEmployees();
 
         } else if (e.getSource() == btnAdd) {
-
-            new EmployeeFormDialog(
-                    this,
-                    client,
-                    this::loadEmployees
-            ).setVisible(true);
+            new EmployeeFormDialog(this, client, this::loadEmployees).setVisible(true);
 
         } else if (e.getSource() == btnDelete) {
-
             int row = table.getSelectedRow();
-
             if (row == -1) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Select a row first."
-                );
-
+                JOptionPane.showMessageDialog(this, "Select a row first.");
                 return;
             }
 
-            String id = (String) tableModel.getValueAt(row, 0);
+            Long id = (Long) tableModel.getValueAt(row, 0);
+            String username = String.valueOf(tableModel.getValueAt(row, 1));
 
-            int confirm = JOptionPane.showConfirmDialog(
-                    this,
-                    "Delete this employee?",
-                    "Confirm",
-                    JOptionPane.YES_NO_OPTION
-            );
-
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Delete employee \"" + username + "\"?", "Confirm", JOptionPane.YES_NO_OPTION);
             if (confirm != JOptionPane.YES_OPTION) {
                 return;
             }
 
             new SwingWorker<Void, Void>() {
-
                 protected Void doInBackground() throws Exception {
                     client.deleteEmployee(id);
                     return null;
                 }
 
                 protected void done() {
+                    try {
+                        get();
+                    } catch (Exception ex) {
+                        String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+                        JOptionPane.showMessageDialog(EmployeeGUI.this, message, "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                     loadEmployees();
                 }
-
             }.execute();
         }
     }
