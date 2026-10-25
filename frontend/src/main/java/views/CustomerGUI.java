@@ -20,7 +20,7 @@ public class CustomerGUI extends JFrame implements ActionListener {
     private JPanel pnlNorth, pnlCenter, pnlSouth;
     private JTable table;
     private DefaultTableModel tableModel;
-    private JButton btnAdd, btnDelete, btnRefresh;
+    private JButton btnDelete, btnRefresh;
     private JLabel lblTitle;
     private ClientApp client;
 
@@ -32,12 +32,11 @@ public class CustomerGUI extends JFrame implements ActionListener {
         pnlCenter = new JPanel();
         pnlSouth = new JPanel();
         tableModel = new DefaultTableModel(new Object[]{
-                "ID", "First Name", "Surname", "Email", "Phone", "Address", "City", "Postal Code", "Country"
+                "ID", "First Name", "Surname", "Email"
         }, 0) {
             public boolean isCellEditable(int row, int col) { return false; }
         };
         table = new JTable(tableModel);
-        btnAdd = new JButton("Add");
         btnDelete = new JButton("Delete");
         btnRefresh = new JButton("Refresh");
         lblTitle = new JLabel("Customer Management");
@@ -50,7 +49,6 @@ public class CustomerGUI extends JFrame implements ActionListener {
 
         pnlNorth.add(lblTitle);
         pnlCenter.add(new JScrollPane(table), BorderLayout.CENTER);
-        pnlSouth.add(btnAdd);
         pnlSouth.add(btnDelete);
         pnlSouth.add(btnRefresh);
 
@@ -58,13 +56,12 @@ public class CustomerGUI extends JFrame implements ActionListener {
         this.add(pnlCenter, BorderLayout.CENTER);
         this.add(pnlSouth, BorderLayout.SOUTH);
 
-        btnAdd.addActionListener(this);
         btnDelete.addActionListener(this);
         btnRefresh.addActionListener(this);
 
-        this.setSize(900, 450);
+        this.setSize(700, 450);
         this.setVisible(true);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setLocationRelativeTo(null);
 
         loadCustomers();
@@ -83,12 +80,7 @@ public class CustomerGUI extends JFrame implements ActionListener {
                                 c.getCustomerId(),
                                 c.getFirstName(),
                                 c.getSurname(),
-                                c.getEmail(),
-                                c.getPhoneNumber(),
-                                c.getAddress(),
-                                c.getCity(),
-                                c.getPostalCode(),
-                                c.getCountry()
+                                c.getEmail()
                         });
                     }
                 } catch (Exception ex) {
@@ -103,25 +95,30 @@ public class CustomerGUI extends JFrame implements ActionListener {
         if (e.getSource() == btnRefresh) {
             loadCustomers();
 
-        } else if (e.getSource() == btnAdd) {
-            new CustomerFormDialog(this, client, this::loadCustomers).setVisible(true);
-
         } else if (e.getSource() == btnDelete) {
             int row = table.getSelectedRow();
             if (row == -1) {
                 JOptionPane.showMessageDialog(this, "Select a row first.");
                 return;
             }
-            Long id = (Long) tableModel.getValueAt(row, 0);
+            String id = (String) tableModel.getValueAt(row, 0);
             int confirm = JOptionPane.showConfirmDialog(this, "Delete this customer?", "Confirm", JOptionPane.YES_NO_OPTION);
             if (confirm != JOptionPane.YES_OPTION) return;
 
             new SwingWorker<Void, Void>() {
                 protected Void doInBackground() throws Exception {
-                    client.deleteCustomer(String.valueOf(id));
+                    client.deleteCustomer(id);
                     return null;
                 }
-                protected void done() { loadCustomers(); }
+                protected void done() {
+                    try {
+                        get();
+                    } catch (Exception ex) {
+                        String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+                        JOptionPane.showMessageDialog(CustomerGUI.this, message, "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                    loadCustomers();
+                }
             }.execute();
         }
     }

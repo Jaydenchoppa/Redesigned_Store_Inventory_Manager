@@ -74,6 +74,7 @@ public class LoginGUI extends JFrame implements ActionListener {
         btnLogin.addActionListener(this);
         btnGoToRegister.addActionListener(this);
 
+        this.getRootPane().setDefaultButton(btnLogin); // Enter key submits
         this.setSize(600, 220);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -84,41 +85,60 @@ public class LoginGUI extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnLogin) {
-            String username = txtUsername.getText().trim();
-            String password = new String(txtPassword.getPassword()).trim();
-
-            if (username.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Please enter username and password.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (radioEmployee.isSelected()) {
-                boolean success = client.authenticateUser(username, password);
-                if (!success) {
-                    JOptionPane.showMessageDialog(null, "Invalid login!", "Login Failed", JOptionPane.ERROR_MESSAGE);
-                    txtUsername.setText("");
-                    txtPassword.setText("");
-                } else {
-                    JOptionPane.showMessageDialog(null, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    this.dispose();
-                    new InventoryGUI(client).setGUI();
-                }
-            } else {
-                boolean success = client.authenticateCustomer(username, password);
-                if (!success) {
-                    JOptionPane.showMessageDialog(null, "Invalid login!", "Login Failed", JOptionPane.ERROR_MESSAGE);
-                    txtUsername.setText("");
-                    txtPassword.setText("");
-                } else {
-                    JOptionPane.showMessageDialog(null, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    this.dispose();
-                    new ShopGUI(client, username).setGUI();
-                }
-            }
-
+            attemptLogin();
         } else if (e.getSource() == btnGoToRegister) {
             this.dispose();
             new CustomerRegisterGUI(client).setGUI();
         }
+    }
+
+    private void attemptLogin() {
+        final String username = txtUsername.getText().trim();
+        final String password = new String(txtPassword.getPassword()).trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter username and password.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        final boolean asEmployee = radioEmployee.isSelected();
+        btnLogin.setEnabled(false);
+        btnLogin.setText("Logging in...");
+
+        new SwingWorker<Boolean, Void>() {
+            @Override
+            protected Boolean doInBackground() {
+                return asEmployee
+                        ? client.authenticateUser(username, password)
+                        : client.authenticateCustomer(username, password);
+            }
+
+            @Override
+            protected void done() {
+                btnLogin.setEnabled(true);
+                btnLogin.setText("Login");
+
+                boolean success;
+                try {
+                    success = get();
+                } catch (Exception ex) {
+                    success = false;
+                }
+
+                if (!success) {
+                    String message = client.getLastError().isEmpty() ? "Invalid login!" : client.getLastError();
+                    JOptionPane.showMessageDialog(LoginGUI.this, message, "Login Failed", JOptionPane.ERROR_MESSAGE);
+                    txtPassword.setText("");
+                    return;
+                }
+
+                dispose();
+                if (asEmployee) {
+                    new InventoryGUI(client).setGUI();
+                } else {
+                    new ShopGUI(client, username).setGUI();
+                }
+            }
+        }.execute();
     }
 }

@@ -30,16 +30,34 @@ public class CustomerAuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        if (customerRepository.findByUsername(request.username).isPresent()
-                || employeeRepository.findByUsername(request.username).isPresent()) {
+        String firstName = clean(request.firstName);
+        String surname = clean(request.surname);
+        String email = clean(request.email);
+        String username = clean(request.username);
+
+        if (firstName.isEmpty() || surname.isEmpty()) {
+            return ResponseEntity.badRequest().body("First name and surname are required.");
+        }
+        if (!email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+            return ResponseEntity.badRequest().body("Please enter a valid email address.");
+        }
+        if (!username.matches("[A-Za-z0-9._-]{3,30}")) {
+            return ResponseEntity.badRequest()
+                    .body("Username must be 3-30 characters: letters, numbers, . _ or -");
+        }
+        if (request.password == null || request.password.length() < 6) {
+            return ResponseEntity.badRequest().body("Password must be at least 6 characters.");
+        }
+        if (customerRepository.findByUsername(username).isPresent()
+                || employeeRepository.findByUsername(username).isPresent()) {
             return ResponseEntity.status(409).body("Username already exists");
         }
         Customer customer = new Customer.Builder()
                 .setCustomerId(UUID.randomUUID().toString())
-                .setFirstName(request.firstName)
-                .setSurname(request.surname)
-                .setEmail(request.email)
-                .setUsername(request.username)
+                .setFirstName(firstName)
+                .setSurname(surname)
+                .setEmail(email)
+                .setUsername(username)
                 .setPassword(passwordEncoder.encode(request.password))
                 .build();
         customerRepository.save(customer);
@@ -50,6 +68,10 @@ public class CustomerAuthController {
     public ResponseEntity<String> login(Authentication authentication) {
         String role = authentication.getAuthorities().iterator().next().getAuthority();
         return ResponseEntity.ok(role);
+    }
+
+    private static String clean(String s) {
+        return s == null ? "" : s.trim();
     }
 
     public static class RegisterRequest {

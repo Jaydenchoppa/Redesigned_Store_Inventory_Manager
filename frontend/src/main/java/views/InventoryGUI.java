@@ -10,7 +10,7 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 /**
- *
+    * InventoryGUI
  * @author Jayden Avontuur
  */
 public class InventoryGUI extends JFrame implements ActionListener {
@@ -18,7 +18,8 @@ public class InventoryGUI extends JFrame implements ActionListener {
     private JPanel pnlNorth, pnlCenter, pnlSouth;
     private JTable table;
     private DefaultTableModel tableModel;
-    private JButton btnAdd, btnDelete, btnRefresh, btnRegisterEmployee, btnViewOrders;
+    private JButton btnAdd, btnDelete, btnRefresh, btnLogout;
+    private JButton btnOrders, btnSuppliers, btnCustomers, btnEmployees;
     private JLabel lblTitle;
     private ClientApp client;
 
@@ -38,23 +39,38 @@ public class InventoryGUI extends JFrame implements ActionListener {
         btnAdd = new JButton("Add");
         btnDelete = new JButton("Delete");
         btnRefresh = new JButton("Refresh");
-        btnRegisterEmployee = new JButton("Register New Employee");
-        btnViewOrders = new JButton("View Orders");
+        btnLogout = new JButton("Log out");
+        btnOrders = new JButton("Order History");
+        btnSuppliers = new JButton("Suppliers");
+        btnCustomers = new JButton("Customers");
+        btnEmployees = new JButton("Employees");
         lblTitle = new JLabel("Inventory Management");
     }
 
     public void setGUI() {
-        pnlNorth.setLayout(new FlowLayout());
+        // Header: title centred on top, navigation buttons centred underneath it
+        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 20f));
+        lblTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
+        JPanel pnlNavButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 8));
+        pnlNavButtons.add(btnOrders);
+        pnlNavButtons.add(btnSuppliers);
+        pnlNavButtons.add(btnCustomers);
+        pnlNavButtons.add(btnEmployees);
+
+        pnlNorth.setLayout(new BorderLayout());
+        pnlNorth.add(lblTitle, BorderLayout.NORTH);
+        pnlNorth.add(pnlNavButtons, BorderLayout.CENTER);
+
         pnlCenter.setLayout(new BorderLayout());
         pnlSouth.setLayout(new FlowLayout());
 
-        pnlNorth.add(lblTitle);
-        pnlNorth.add(btnRegisterEmployee);
-        pnlNorth.add(btnViewOrders);
         pnlCenter.add(new JScrollPane(table), BorderLayout.CENTER);
         pnlSouth.add(btnAdd);
         pnlSouth.add(btnDelete);
         pnlSouth.add(btnRefresh);
+        pnlSouth.add(btnLogout);
 
         this.add(pnlNorth, BorderLayout.NORTH);
         this.add(pnlCenter, BorderLayout.CENTER);
@@ -63,8 +79,11 @@ public class InventoryGUI extends JFrame implements ActionListener {
         btnAdd.addActionListener(this);
         btnDelete.addActionListener(this);
         btnRefresh.addActionListener(this);
-        btnRegisterEmployee.addActionListener(this);
-        btnViewOrders.addActionListener(this);
+        btnLogout.addActionListener(this);
+        btnOrders.addActionListener(this);
+        btnSuppliers.addActionListener(this);
+        btnCustomers.addActionListener(this);
+        btnEmployees.addActionListener(this);
 
         this.setSize(900, 450);
         this.setVisible(true);
@@ -124,13 +143,31 @@ public class InventoryGUI extends JFrame implements ActionListener {
                     client.deleteInventory(id);
                     return null;
                 }
-                protected void done() { loadInventory(); }
+                protected void done() {
+                    try {
+                        get();
+                    } catch (Exception ex) {
+                        String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+                        JOptionPane.showMessageDialog(InventoryGUI.this, message, "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                    loadInventory();
+                }
             }.execute();
 
-        } else if (e.getSource() == btnRegisterEmployee) {
-            new RegisterGUI(client).setGUI();
-        } else if (e.getSource() == btnViewOrders) {
+        } else if (e.getSource() == btnOrders) {
             new OrderGUI(client).setGUI();
+
+        } else if (e.getSource() == btnSuppliers) {
+            new SupplierGUI(client).setGUI();
+
+        } else if (e.getSource() == btnCustomers) {
+            new CustomerGUI(client).setGUI();
+
+        } else if (e.getSource() == btnEmployees) {
+            new EmployeeGUI(client).setGUI();
+
+        } else if (e.getSource() == btnLogout) {
+            client.logoutAndShowLogin();
         }
     }
 }
