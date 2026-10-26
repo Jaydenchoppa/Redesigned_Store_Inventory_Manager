@@ -163,7 +163,17 @@ public class SupplierGUI extends JFrame implements ActionListener {
                 }
 
                 protected void done() {
-                    loadSuppliers();
+                    try {
+                        get();
+                        loadSuppliers();
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(
+                                SupplierGUI.this,
+                                "Failed to delete supplier: " + ex.getMessage(),
+                                "Delete Failed",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    }
                 }
 
             }.execute();

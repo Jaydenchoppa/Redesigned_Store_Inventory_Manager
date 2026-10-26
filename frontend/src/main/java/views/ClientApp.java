@@ -307,9 +307,14 @@ public class ClientApp {
     }
 
     public void deleteSupplier(String id) throws Exception {
-        HttpRequest request = newRequest(SUPPLIER_URL + "/delete?SupplierId=" + id).DELETE().build();
-        HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+        HttpRequest request = newRequest(SUPPLIER_URL + "/delete?id="
+                + java.net.URLEncoder.encode(id, StandardCharsets.UTF_8)).DELETE().build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         check(response);
+        if (response.statusCode() >= 400) {
+            throw new Exception(serverMessage(response,
+                    "Could not delete the supplier (server returned " + response.statusCode() + ")."));
+        }
     }
 
     public List<Employee> getAllEmployees() throws Exception {
