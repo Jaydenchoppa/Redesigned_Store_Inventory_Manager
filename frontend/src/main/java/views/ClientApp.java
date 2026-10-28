@@ -183,6 +183,33 @@ public class ClientApp {
         return mapper.readValue(response.body(), Inventory.class);
     }
 
+    public Inventory updateInventory(Long id, Inventory inventory) throws Exception {
+        String json = mapper.writeValueAsString(inventory);
+
+        HttpRequest request = newRequest(INVENTORY_URL + "/" + id)
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(
+                request, HttpResponse.BodyHandlers.ofString());
+
+        check(response);
+
+        if (response.statusCode() != 200 && response.statusCode() != 201) {
+            throw new Exception(
+                    serverMessage(response,
+                            "Failed to update inventory (server returned "
+                                    + response.statusCode() + ")."));
+        }
+
+        if (response.body() == null || response.body().isBlank()) {
+            return inventory;
+        }
+
+        return mapper.readValue(response.body(), Inventory.class);
+    }
+
     public void deleteInventory(Long id) throws Exception {
         HttpRequest request = newRequest(INVENTORY_URL + "/" + id).DELETE().build();
         HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());

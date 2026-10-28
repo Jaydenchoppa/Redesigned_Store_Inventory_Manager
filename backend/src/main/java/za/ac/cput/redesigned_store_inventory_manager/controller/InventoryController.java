@@ -84,11 +84,67 @@ public class InventoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Inventory> updateInventory(@PathVariable Long id, @RequestBody Inventory inventory) {
-        if (!inventoryService.existsById(id)) {
+    public ResponseEntity<Inventory> updateInventory(
+            @PathVariable Long id,
+            @RequestBody Inventory inventory) {
+
+        Optional<Inventory> optionalExisting = inventoryService.findById(id);
+
+        if (optionalExisting.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        Inventory updated = inventoryService.save(inventory);
+
+        Inventory existing = optionalExisting.get();
+
+        // Update inventory fields without creating a new Inventory object
+        existing.setQuantityInStock(inventory.getQuantityInStock());
+        existing.setMinimumStockLevel(inventory.getMinimumStockLevel());
+        existing.setMaximumStockLevel(inventory.getMaximumStockLevel());
+        existing.setUnitPrice(inventory.getUnitPrice());
+        existing.setLastRestockedDate(inventory.getLastRestockedDate());
+        existing.setLocation(inventory.getLocation());
+
+        // Resolve the existing product instead of inserting a duplicate
+        if (inventory.getProduct() != null
+                && inventory.getProduct().getProductId() != null) {
+
+            Optional<Product> optionalProduct =
+                    productRepository.findById(inventory.getProduct().getProductId());
+
+            if (optionalProduct.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            Product existingProduct = optionalProduct.get();
+
+            // Product name belongs to the Product record
+            if (inventory.getProduct().getProductName() != null) {
+                existingProduct.setProductName(
+                        inventory.getProduct().getProductName());
+                productRepository.save(existingProduct);
+            }
+
+            existing.setProduct(existingProduct);
+        }
+
+        // Reuse the existing supplier if one was supplied
+        if (inventory.getSupplier() != null
+                && inventory.getSupplier().getSupplierId() != null) {
+
+            Optional<Supplier> optionalSupplier =
+                    supplierRepository.findById(
+                            inventory.getSupplier().getSupplierId());
+
+            if (optionalSupplier.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            existing.setSupplier(optionalSupplier.get());
+        }
+
+        // Preserve the existing category to avoid inserting a duplicate category
+        Inventory updated = inventoryService.save(existing);
+
         return ResponseEntity.ok(updated);
     }
 

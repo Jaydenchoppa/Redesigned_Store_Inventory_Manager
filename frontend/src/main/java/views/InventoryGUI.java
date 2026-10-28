@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
+
+
 /**
     * InventoryGUI
  * @author Jayden Avontuur
@@ -18,7 +20,7 @@ public class InventoryGUI extends JFrame implements ActionListener {
     private JPanel pnlNorth, pnlCenter, pnlSouth;
     private JTable table;
     private DefaultTableModel tableModel;
-    private JButton btnAdd, btnDelete, btnRefresh, btnLogout;
+    private JButton btnAdd, btnUpdate, btnDelete, btnRefresh, btnLogout;
     private JButton btnOrders, btnSuppliers, btnCustomers, btnEmployees;
     private JLabel lblTitle;
     private ClientApp client;
@@ -33,10 +35,13 @@ public class InventoryGUI extends JFrame implements ActionListener {
         tableModel = new DefaultTableModel(new Object[]{
                 "ID", "Product ID", "Product Name", "Category", "Supplier", "Qty", "Unit Price", "Location"
         }, 0) {
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
         };
         table = new JTable(tableModel);
         btnAdd = new JButton("Add");
+        btnUpdate = new JButton("Update");
         btnDelete = new JButton("Delete");
         btnRefresh = new JButton("Refresh");
         btnLogout = new JButton("Log out");
@@ -68,6 +73,7 @@ public class InventoryGUI extends JFrame implements ActionListener {
 
         pnlCenter.add(new JScrollPane(table), BorderLayout.CENTER);
         pnlSouth.add(btnAdd);
+        pnlSouth.add(btnUpdate);
         pnlSouth.add(btnDelete);
         pnlSouth.add(btnRefresh);
         pnlSouth.add(btnLogout);
@@ -77,6 +83,7 @@ public class InventoryGUI extends JFrame implements ActionListener {
         this.add(pnlSouth, BorderLayout.SOUTH);
 
         btnAdd.addActionListener(this);
+        btnUpdate.addActionListener(this);
         btnDelete.addActionListener(this);
         btnRefresh.addActionListener(this);
         btnLogout.addActionListener(this);
@@ -87,6 +94,7 @@ public class InventoryGUI extends JFrame implements ActionListener {
 
         this.setSize(900, 450);
         this.setVisible(true);
+        this.setLayout(new BorderLayout());
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
 
@@ -98,6 +106,7 @@ public class InventoryGUI extends JFrame implements ActionListener {
             protected List<Inventory> doInBackground() throws Exception {
                 return client.getAllInventory();
             }
+
             protected void done() {
                 try {
                     tableModel.setRowCount(0);
@@ -128,46 +137,99 @@ public class InventoryGUI extends JFrame implements ActionListener {
         } else if (e.getSource() == btnAdd) {
             new InventoryFormDialog(this, client, this::loadInventory).setVisible(true);
 
-        } else if (e.getSource() == btnDelete) {
+        } else if (e.getSource() == btnUpdate) {
             int row = table.getSelectedRow();
+
             if (row == -1) {
-                JOptionPane.showMessageDialog(this, "Select a row first.");
+                JOptionPane.showMessageDialog(
+                        this, "Please select an inventory item to update.");
                 return;
             }
-            Long id = (Long) tableModel.getValueAt(row, 0);
-            int confirm = JOptionPane.showConfirmDialog(this, "Delete this inventory item?", "Confirm", JOptionPane.YES_NO_OPTION);
-            if (confirm != JOptionPane.YES_OPTION) return;
 
-            new SwingWorker<Void, Void>() {
-                protected Void doInBackground() throws Exception {
-                    client.deleteInventory(id);
-                    return null;
+            Long inventoryId = Long.valueOf(
+                    tableModel.getValueAt(row, 0).toString());
+
+            new SwingWorker<Inventory, Void>() {
+                @Override
+                protected Inventory doInBackground() throws Exception {
+                    return client.getAllInventory().stream()
+                            .filter(inv -> inventoryId.equals(inv.getInventoryId()))
+                            .findFirst()
+                            .orElseThrow(() ->
+                                    new Exception("Inventory item not found."));
                 }
+
+                @Override
                 protected void done() {
                     try {
-                        get();
+                        Inventory selectedInventory = get();
+
+                        new InventoryFormDialog(
+                                InventoryGUI.this,
+                                client,
+                                InventoryGUI.this::loadInventory,
+                                inventoryId,
+                                selectedInventory
+                        ).setVisible(true);
+
                     } catch (Exception ex) {
-                        String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
-                        JOptionPane.showMessageDialog(InventoryGUI.this, message, "Error", JOptionPane.ERROR_MESSAGE);
+                        Throwable cause = ex.getCause() != null
+                                ? ex.getCause() : ex;
+
+                        JOptionPane.showMessageDialog(
+                                InventoryGUI.this,
+                                cause.getMessage(),
+                                "Update Error",
+                                JOptionPane.ERROR_MESSAGE);
+
                     }
-                    loadInventory();
                 }
+
             }.execute();
+        }else if (e.getSource() == btnDelete) {
+                int row = table.getSelectedRow();
+                if (row == -1) {
+                    JOptionPane.showMessageDialog(this, "Select a row first.");
+                    return;
+                }
+            Long id = Long.valueOf(
+                    tableModel.getValueAt(row, 0).toString()
+            );
+                int confirm = JOptionPane.showConfirmDialog(this, "Delete this inventory item?", "Confirm", JOptionPane.YES_NO_OPTION);
+                if (confirm != JOptionPane.YES_OPTION) return;
 
-        } else if (e.getSource() == btnOrders) {
-            new OrderGUI(client).setGUI();
+                new SwingWorker<Void, Void>() {
+                    protected Void doInBackground() throws Exception {
+                        client.deleteInventory(id);
+                        return null;
+                    }
 
-        } else if (e.getSource() == btnSuppliers) {
-            new SupplierGUI(client).setGUI();
+                    protected void done() {
+                        try {
+                            get();
+                        } catch (Exception ex) {
+                            String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+                            JOptionPane.showMessageDialog(InventoryGUI.this, message, "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                        loadInventory();
+                    }
+                }.execute();
 
-        } else if (e.getSource() == btnCustomers) {
-            new CustomerGUI(client).setGUI();
+            } else if (e.getSource() == btnOrders) {
+                new OrderGUI(client).setGUI();
 
-        } else if (e.getSource() == btnEmployees) {
-            new EmployeeGUI(client).setGUI();
+            } else if (e.getSource() == btnSuppliers) {
+                new SupplierGUI(client).setGUI();
 
-        } else if (e.getSource() == btnLogout) {
-            client.logoutAndShowLogin();
+            } else if (e.getSource() == btnCustomers) {
+                new CustomerGUI(client).setGUI();
+
+            } else if (e.getSource() == btnEmployees) {
+                new EmployeeGUI(client).setGUI();
+
+            } else if (e.getSource() == btnLogout) {
+                client.logoutAndShowLogin();
+            }
         }
     }
-}
+

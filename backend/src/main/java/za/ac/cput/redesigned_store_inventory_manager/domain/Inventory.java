@@ -58,6 +58,42 @@ public class Inventory {
     public LocalDate getLastRestockedDate() { return lastRestockedDate; }
     public String getLocation() { return location; }
 
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public void setSupplier(Supplier supplier) {
+        this.supplier = supplier;
+    }
+
+    public void setQuantityInStock(int quantityInStock) {
+        this.quantityInStock = quantityInStock;
+    }
+
+    public void setMinimumStockLevel(int minimumStockLevel) {
+        this.minimumStockLevel = minimumStockLevel;
+    }
+
+    public void setMaximumStockLevel(int maximumStockLevel) {
+        this.maximumStockLevel = maximumStockLevel;
+    }
+
+    public void setUnitPrice(double unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public void setLastRestockedDate(LocalDate lastRestockedDate) {
+        this.lastRestockedDate = lastRestockedDate;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     @Override
     public String toString() {
         return "Inventory{" +
