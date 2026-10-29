@@ -23,14 +23,13 @@ public class OrderFactoryTest {
     @Test
     public void createOrderAllFieldsTest(){
         Order order = factory.createOrder("ORD001","CUST001","1/Jan/2026",
-                "6/Jan/2026",10000.0, "Delivered",
+                200, "Delivered",
                 "Signed Baseball bat MLB");
 
         assertEquals("ORD001", order.getOrderNum());
         assertEquals("CUST001", order.getCustomerId());
         assertEquals("1/Jan/2026", order.getOrderDate());
-        assertEquals("6/Jan/2026", order.getDeliveryDate());
-        assertEquals(10000.0, order.getTotalAmount());
+        assertEquals(200, order.getTotalAmount());
         assertEquals("Delivered", order.getStatus());
         assertEquals("Signed Baseball bat MLB", order.getItem());
 
@@ -40,7 +39,7 @@ public class OrderFactoryTest {
     @Test
     public void factoryCreatesValidCustomerTest(){
         Order order = factory.createOrder("ORD002","CUST002","10/Mar/2026",
-                "13/Mar/2026",1000.0, "Delivered",
+                1000, "Delivered",
                 "Signed Baseball bat MLB");
 
         assertTrue(order.getOrderNum().equals("ORD002"));

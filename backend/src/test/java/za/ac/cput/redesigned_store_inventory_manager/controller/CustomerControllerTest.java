@@ -40,11 +40,6 @@ public class CustomerControllerTest {
                 .setFirstName("Lex")
                 .setSurname("Fridman")
                 .setEmail("Lex8Fridman@gmail.com")
-                .setPhoneNumber("+27 84 797 2480")
-                .setAddress("28 Space road")
-                .setCity("Cape Town")
-                .setPostalCode("7599")
-                .setCountry("South Africa")
                 .build();
     }
 

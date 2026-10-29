@@ -33,7 +33,6 @@ public class OrderControllerTest {
         order = new Order.Builder()
                 .setOrderNum("ORD001")
                 .setOrderDate("18/9/26")
-                .setDeliveryDate("25/9/26")
                 .setTotalAmount(100.00)
                 .setStatus("Pending")
                 .setItem("ITEM001")

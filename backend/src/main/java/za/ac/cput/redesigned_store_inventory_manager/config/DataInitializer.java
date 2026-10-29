@@ -25,7 +25,6 @@ public class DataInitializer implements CommandLineRunner {
             Employee admin = new Employee.Builder()
                     .setEmployeeName("Admin")
                     .setPosition("Manager")
-                    .setSalary(0.0)
                     .setUsername("admin")
                     .setPassword(passwordEncoder.encode("admin123"))
                     .build();

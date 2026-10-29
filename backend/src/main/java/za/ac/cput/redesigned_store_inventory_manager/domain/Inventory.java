@@ -26,10 +26,7 @@ public class Inventory {
     private Supplier supplier;
 
     private int quantityInStock;
-    private int minimumStockLevel;
-    private int maximumStockLevel;
     private double unitPrice;
-    private LocalDate lastRestockedDate;
     private String location;
 
     protected Inventory() {}
@@ -40,10 +37,7 @@ public class Inventory {
         this.product = builder.product;
         this.supplier = builder.supplier;
         this.quantityInStock = builder.quantityInStock;
-        this.minimumStockLevel = builder.minimumStockLevel;
-        this.maximumStockLevel = builder.maximumStockLevel;
         this.unitPrice = builder.unitPrice;
-        this.lastRestockedDate = builder.lastRestockedDate;
         this.location = builder.location;
     }
 
@@ -52,10 +46,7 @@ public class Inventory {
     public Product getProduct() { return product; }
     public Supplier getSupplier() { return supplier; }
     public int getQuantityInStock() { return quantityInStock; }
-    public int getMinimumStockLevel() { return minimumStockLevel; }
-    public int getMaximumStockLevel() { return maximumStockLevel; }
     public double getUnitPrice() { return unitPrice; }
-    public LocalDate getLastRestockedDate() { return lastRestockedDate; }
     public String getLocation() { return location; }
 
     public void setCategory(Category category) {
@@ -74,20 +65,8 @@ public class Inventory {
         this.quantityInStock = quantityInStock;
     }
 
-    public void setMinimumStockLevel(int minimumStockLevel) {
-        this.minimumStockLevel = minimumStockLevel;
-    }
-
-    public void setMaximumStockLevel(int maximumStockLevel) {
-        this.maximumStockLevel = maximumStockLevel;
-    }
-
     public void setUnitPrice(double unitPrice) {
         this.unitPrice = unitPrice;
-    }
-
-    public void setLastRestockedDate(LocalDate lastRestockedDate) {
-        this.lastRestockedDate = lastRestockedDate;
     }
 
     public void setLocation(String location) {
@@ -102,10 +81,7 @@ public class Inventory {
                 ", product=" + product +
                 ", supplier=" + supplier +
                 ", quantityInStock=" + quantityInStock +
-                ", minimumStockLevel=" + minimumStockLevel +
-                ", maximumStockLevel=" + maximumStockLevel +
                 ", unitPrice=" + unitPrice +
-                ", lastRestockedDate=" + lastRestockedDate +
                 ", location='" + location + '\'' +
                 '}';
     }
@@ -117,10 +93,7 @@ public class Inventory {
         private Category category;
         private Supplier supplier;
         private int quantityInStock;
-        private int minimumStockLevel;
-        private int maximumStockLevel;
         private double unitPrice;
-        private LocalDate lastRestockedDate;
         private String location;
 
         public Builder(Long inventoryId) {
@@ -147,23 +120,9 @@ public class Inventory {
             return this;
         }
 
-        public Builder minimumStockLevel(int minimumStockLevel) {
-            this.minimumStockLevel = minimumStockLevel;
-            return this;
-        }
-
-        public Builder maximumStockLevel(int maximumStockLevel) {
-            this.maximumStockLevel = maximumStockLevel;
-            return this;
-        }
 
         public Builder unitPrice(double unitPrice) {
             this.unitPrice = unitPrice;
-            return this;
-        }
-
-        public Builder lastRestockedDate(LocalDate date) {
-            this.lastRestockedDate = date;
             return this;
         }
 

@@ -51,10 +51,7 @@ public class InventoryController {
     public ResponseEntity<Inventory> createInventory(@RequestBody Inventory inventory) {
         Inventory.Builder builder = new Inventory.Builder(inventory.getInventoryId())
                 .quantityInStock(inventory.getQuantityInStock())
-                .minimumStockLevel(inventory.getMinimumStockLevel())
-                .maximumStockLevel(inventory.getMaximumStockLevel())
                 .unitPrice(inventory.getUnitPrice())
-                .lastRestockedDate(inventory.getLastRestockedDate())
                 .location(inventory.getLocation())
                 .category(inventory.getCategory());
 
@@ -98,10 +95,7 @@ public class InventoryController {
 
         // Update inventory fields without creating a new Inventory object
         existing.setQuantityInStock(inventory.getQuantityInStock());
-        existing.setMinimumStockLevel(inventory.getMinimumStockLevel());
-        existing.setMaximumStockLevel(inventory.getMaximumStockLevel());
         existing.setUnitPrice(inventory.getUnitPrice());
-        existing.setLastRestockedDate(inventory.getLastRestockedDate());
         existing.setLocation(inventory.getLocation());
 
         // Resolve the existing product instead of inserting a duplicate

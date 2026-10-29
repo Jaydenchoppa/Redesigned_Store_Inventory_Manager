@@ -13,21 +13,15 @@ public class CustomerFactory {
             String firstName,
             String surname,
             String email,
-            String phoneNumber,
-            String address,
-            String city,
-            String postalCode,
-            String country){
+            String username,
+            String password){
         return new Customer.Builder()
                 .setCustomerId(customerId)
                 .setFirstName(firstName)
                 .setSurname(surname)
                 .setEmail(email)
-                .setPhoneNumber(phoneNumber)
-                .setAddress(address)
-                .setCity(city)
-                .setPostalCode(postalCode)
-                .setCountry(country)
+                .setUsername(username)
+                .setPassword(password)
                 .build();
     }
 }

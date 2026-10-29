@@ -20,7 +20,6 @@ public class Employee {
     private String employeeId;
     private String employeeName;
     private String position;
-    private double salary;
     private String username;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
@@ -31,7 +30,6 @@ public class Employee {
         this.employeeId = builder.employeeId;
         this.employeeName = builder.employeeName;
         this.position = builder.position;
-        this.salary = builder.salary;
         this.username = builder.username;
         this.password = builder.password;
         this.id = builder.id;
@@ -53,10 +51,6 @@ public class Employee {
         return position;
     }
 
-    public double getSalary() {
-        return salary;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -65,6 +59,7 @@ public class Employee {
         return password;
     }
 
+
     @Override
     public String toString() {
         return "Employee{" +
@@ -72,8 +67,8 @@ public class Employee {
                 ", employeeId='" + employeeId + '\'' +
                 ", employeeName='" + employeeName + '\'' +
                 ", position='" + position + '\'' +
-                ", salary=" + salary +
                 ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
                 '}';
     }
 
@@ -82,7 +77,6 @@ public class Employee {
         private String employeeId;
         private String employeeName;
         private String position;
-        private double salary;
         private String username;
         private Long id;
         private String password;
@@ -99,11 +93,6 @@ public class Employee {
 
         public Builder setPosition(String position) {
             this.position = position;
-            return this;
-        }
-
-        public Builder setSalary(double salary) {
-            this.salary = salary;
             return this;
         }
 
@@ -127,7 +116,6 @@ public class Employee {
             this.employeeId = employee.getEmployeeId();
             this.employeeName = employee.getEmployeeName();
             this.position = employee.getPosition();
-            this.salary = employee.getSalary();
             this.username = employee.getUsername();
             this.password = employee.getPassword();
             return this;

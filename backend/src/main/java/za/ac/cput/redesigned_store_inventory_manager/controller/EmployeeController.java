@@ -64,9 +64,6 @@ public class EmployeeController {
         if (name.isEmpty()) {
             return ResponseEntity.badRequest().body("Employee name is required.");
         }
-        if (employee.getSalary() < 0) {
-            return ResponseEntity.badRequest().body("Salary cannot be negative.");
-        }
         if (employeeRepository.findByUsername(username).isPresent()
                 || customerRepository.findByUsername(username).isPresent()) {
             return ResponseEntity.status(409).body("Username already exists");
@@ -81,7 +78,6 @@ public class EmployeeController {
                         : employeeId)
                 .setEmployeeName(name)
                 .setPosition(position.isEmpty() ? "Staff" : position)
-                .setSalary(employee.getSalary())
                 .setUsername(username)
                 .setPassword(passwordEncoder.encode(password))
                 .build();

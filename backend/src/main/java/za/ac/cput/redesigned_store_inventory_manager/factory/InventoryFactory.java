@@ -14,10 +14,7 @@ public class InventoryFactory {
             Category category,
             Supplier supplier,
             int quantityInStock,
-            int minimumStockLevel,
-            int maximumStockLevel,
             double unitPrice,
-            LocalDate lastRestockedDate,
             String location) {
 
         return new Inventory.Builder(1L) // placeholder ID (DB will generate real one)
@@ -25,10 +22,7 @@ public class InventoryFactory {
                 .category(category)
                 .supplier(supplier)
                 .quantityInStock(quantityInStock)
-                .minimumStockLevel(minimumStockLevel)
-                .maximumStockLevel(maximumStockLevel)
                 .unitPrice(unitPrice)
-                .lastRestockedDate(lastRestockedDate)
                 .location(location)
                 .build();
     }

@@ -20,8 +20,7 @@ class EmployeeFactoryTest {
         Employee employee = EmployeeFactory.createEmployee(
                 "EMP001",
                 "Templeton",
-                "Manager",
-                25000.00
+                "Manager"
         );
 
         assertNotNull(employee);
@@ -35,8 +34,7 @@ class EmployeeFactoryTest {
         Employee employee = EmployeeFactory.createEmployee(
                 "EMP001",
                 "Templeton",
-                "Manager",
-                -100.00
+                "Manager"
         );
 
         assertNull(employee);

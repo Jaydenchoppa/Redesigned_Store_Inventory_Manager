@@ -12,7 +12,6 @@ public class OrderFactory {
             String orderNum,
             String customerId,
             String orderDate,
-            String deliveryDate,
             double totalAmount,
             String status,
             String item){
@@ -20,7 +19,6 @@ public class OrderFactory {
                 .setOrderNum(orderNum)
                 .setCustomerId(customerId)
                 .setOrderDate(orderDate)
-                .setDeliveryDate(deliveryDate)
                 .setTotalAmount(totalAmount)
                 .setStatus(status)
                 .setItem(item)

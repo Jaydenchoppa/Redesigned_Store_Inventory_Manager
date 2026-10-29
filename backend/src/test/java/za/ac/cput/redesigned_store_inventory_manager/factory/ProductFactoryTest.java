@@ -14,8 +14,8 @@ public class ProductFactoryTest {
 
     @Test
     void createProduct() {
-        Product product = ProductFactory.createProduct("1234","Iphone17","proMax","R29000");
-        Product product2 = ProductFactory.createProduct("","Iphone17","proMax","R29000");
+        Product product = ProductFactory.createProduct("1234","Iphone17","R29000");
+        Product product2 = ProductFactory.createProduct("","Iphone17","R29000");
 
         assertNotNull(product);
         System.out.println(product);

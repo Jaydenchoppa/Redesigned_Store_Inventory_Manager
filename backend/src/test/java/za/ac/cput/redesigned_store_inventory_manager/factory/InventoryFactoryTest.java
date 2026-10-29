@@ -25,9 +25,6 @@ class InventoryFactoryTest {
                 supplier,
                 50,
                 10,
-                100,
-                29.99,
-                LocalDate.now(),
                 "Warehouse A"
         );
 
@@ -49,9 +46,6 @@ class InventoryFactoryTest {
                 supplier,
                 -5, // invalid
                 10,
-                100,
-                29.99,
-                LocalDate.now(),
                 "Warehouse A"
         );
 

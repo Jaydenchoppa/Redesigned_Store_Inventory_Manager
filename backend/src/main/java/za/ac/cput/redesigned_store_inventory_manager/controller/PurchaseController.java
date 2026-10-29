@@ -57,7 +57,6 @@ public class PurchaseController {
                 .setItem(productId)
                 .setQuantity(request.quantity)
                 .setOrderDate(LocalDate.now().toString())
-                .setDeliveryDate("")
                 .setStatus("Completed")
                 .setTotalAmount(total)
                 .build();

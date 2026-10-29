@@ -12,7 +12,6 @@ public class Product {
     @Id
     private String productId;
     private String productName;
-    private String productDescription;
     private String productPrice;
 
 
@@ -22,7 +21,6 @@ public class Product {
     private Product(Builder builder){
         this.productId= builder.productId;
         this.productName=builder.productName;
-        this.productDescription=builder.productDescription;
         this.productPrice=builder.productPrice;
 
     }
@@ -43,16 +41,6 @@ public class Product {
         this.productPrice = productPrice;
     }
 
-
-
-    public String getProductDescription() {
-        return productDescription;
-    }
-
-    public void setProductDescription(String productDescription) {
-        this.productDescription = productDescription;
-    }
-
     public String getProductName() {
         return productName;
     }
@@ -61,12 +49,12 @@ public class Product {
         this.productName = productName;
     }
 
+
     @Override
     public String toString() {
         return "Product{" +
                 "productId='" + productId + '\'' +
                 ", productName='" + productName + '\'' +
-                ", productDescription='" + productDescription + '\'' +
                 ", productPrice='" + productPrice + '\'' +
                 '}';
     }
@@ -74,13 +62,11 @@ public class Product {
     public static class Builder{
         private String productId;
         private String productName;
-        private String productDescription;
         private String productPrice;
 
         public Builder copy(Product product){
             this.productId=product.productId;
             this.productName=product.productName;
-            this.productDescription=product.productDescription;
             this.productPrice=product.productPrice;
             return this;
         }
@@ -91,10 +77,6 @@ public class Product {
         }
         public Builder setProductName(String productName){
             this.productName=productName;
-            return this;
-        }
-        public Builder setProductDescription( String productDescription){
-            this.productDescription=productDescription;
             return this;
         }
         public Builder setProductPrice(String productPrice){

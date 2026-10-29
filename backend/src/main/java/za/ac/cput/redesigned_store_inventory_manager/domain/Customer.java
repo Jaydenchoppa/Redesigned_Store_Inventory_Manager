@@ -16,11 +16,6 @@ public class Customer {
     private String firstName;
     private String surname;
     private String email;
-    private String phoneNumber;
-    private String address;
-    private String city;
-    private String postalCode;
-    private String country;
     private String username;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -44,25 +39,6 @@ public class Customer {
         return email;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public String getPostalCode() {
-        return postalCode;
-    }
-
-    public String getCountry() {
-        return country;
-    }
 
     public String getUsername() { return username; }
     public String getPassword() { return password; }
@@ -72,11 +48,6 @@ public class Customer {
         this.firstName = builder.firstName;
         this.surname = builder.surname;
         this.email = builder.email;
-        this.phoneNumber = builder.phoneNumber;
-        this.address = builder.address;
-        this.city = builder.city;
-        this.postalCode = builder.postalCode;
-        this.country = builder.country;
         this.username = builder.username;
         this.password = builder.password;
     }
@@ -86,11 +57,6 @@ public class Customer {
         private String firstName;
         private String surname;
         private String email;
-        private String phoneNumber;
-        private String address;
-        private String city;
-        private String postalCode;
-        private String country;
         private String username;
         private String password;
 
@@ -114,30 +80,6 @@ public class Customer {
             return this;
         }
 
-        public Builder setPhoneNumber(String phoneNumber) {
-            this.phoneNumber = phoneNumber;
-            return this;
-        }
-
-        public Builder setAddress(String address) {
-            this.address = address;
-            return this;
-        }
-
-        public Builder setCity(String city) {
-            this.city = city;
-            return this;
-        }
-
-        public Builder setPostalCode(String postalCode) {
-            this.postalCode = postalCode;
-            return this;
-        }
-
-        public Builder setCountry(String country) {
-            this.country = country;
-            return this;
-        }
 
         public Builder setUsername(String username){
             this.username = username;
@@ -154,11 +96,6 @@ public class Customer {
             this.firstName = customer.getFirstName();
             this.surname = customer.getSurname();
             this.email = customer.getEmail();
-            this.phoneNumber = customer.getPhoneNumber();
-            this.address = customer.getAddress();
-            this.city = customer.getCity();
-            this.postalCode = customer.getPostalCode();
-            this.country = customer.getCountry();
             this.username = customer.getUsername();
             this.password = customer.getPassword();
             return this;

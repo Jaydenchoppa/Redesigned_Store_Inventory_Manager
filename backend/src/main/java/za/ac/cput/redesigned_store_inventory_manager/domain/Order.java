@@ -16,7 +16,6 @@ public class Order {
     private String orderNum;
     private String customerId;
     private String orderDate;
-    private String deliveryDate;
     private double totalAmount;
     private String status;
     private String item;
@@ -34,10 +33,6 @@ public class Order {
 
     public String getOrderDate() {
         return orderDate;
-    }
-
-    public String getDeliveryDate() {
-        return deliveryDate;
     }
 
     public double getTotalAmount() {
@@ -60,7 +55,6 @@ public class Order {
         this.orderNum = builder.orderNum;
         this.customerId = builder.customerId;
         this.orderDate = builder.orderDate;
-        this.deliveryDate = builder.deliveryDate;
         this.totalAmount = builder.totalAmount;
         this.status = builder.status;
         this.item = builder.item;
@@ -71,7 +65,6 @@ public class Order {
         private String orderNum;
         private String customerId;
         private String orderDate;
-        private String deliveryDate;
         private double totalAmount;
         private String status;
         private String item;
@@ -89,11 +82,6 @@ public class Order {
 
         public Builder setOrderDate(String orderDate) {
             this.orderDate = orderDate;
-            return this;
-        }
-
-        public Builder setDeliveryDate(String deliveryDate) {
-            this.deliveryDate = deliveryDate;
             return this;
         }
 
@@ -121,7 +109,6 @@ public class Order {
             this.orderNum = order.getOrderNum();
             this.customerId = order.getCustomerId();
             this.orderDate = order.getOrderDate();
-            this.deliveryDate = order.getDeliveryDate();
             this.totalAmount = order.getTotalAmount();
             this.status = order.getStatus();
             this.item = order.getItem();
