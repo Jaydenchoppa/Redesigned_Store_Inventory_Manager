@@ -12,7 +12,6 @@ public class Product {
     @Id
     private String productId;
     private String productName;
-    private String productPrice;
 
 
     public Product(){
@@ -21,7 +20,6 @@ public class Product {
     private Product(Builder builder){
         this.productId= builder.productId;
         this.productName=builder.productName;
-        this.productPrice=builder.productPrice;
 
     }
 
@@ -31,14 +29,6 @@ public class Product {
 
     public void setProductId(String productId) {
         this.productId = productId;
-    }
-
-    public String getProductPrice() {
-        return productPrice;
-    }
-
-    public void setProductPrice(String productPrice) {
-        this.productPrice = productPrice;
     }
 
     public String getProductName() {
@@ -55,19 +45,16 @@ public class Product {
         return "Product{" +
                 "productId='" + productId + '\'' +
                 ", productName='" + productName + '\'' +
-                ", productPrice='" + productPrice + '\'' +
                 '}';
     }
 
     public static class Builder{
         private String productId;
         private String productName;
-        private String productPrice;
 
         public Builder copy(Product product){
             this.productId=product.productId;
             this.productName=product.productName;
-            this.productPrice=product.productPrice;
             return this;
         }
 
@@ -79,17 +66,9 @@ public class Product {
             this.productName=productName;
             return this;
         }
-        public Builder setProductPrice(String productPrice){
-            this.productPrice=productPrice;
-            return this;
-
-
-        }
         public Product build(){
             return new Product(this);
         }
     }
 
 }
-
-

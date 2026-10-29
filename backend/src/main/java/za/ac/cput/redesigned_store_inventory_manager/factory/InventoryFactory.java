@@ -17,6 +17,9 @@ public class InventoryFactory {
             double unitPrice,
             String location) {
 
+        if (quantityInStock < 0 || unitPrice < 0)
+            return null;
+
         return new Inventory.Builder(1L) // placeholder ID (DB will generate real one)
                 .product(product)
                 .category(category)

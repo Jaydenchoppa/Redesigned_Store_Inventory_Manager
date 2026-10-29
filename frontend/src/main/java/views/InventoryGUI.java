@@ -53,7 +53,6 @@ public class InventoryGUI extends JFrame implements ActionListener {
     }
 
     public void setGUI() {
-        // Header: title centred on top, navigation buttons centred underneath it
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
         lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 20f));
         lblTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));

@@ -19,7 +19,6 @@ public class Employee {
 
     private String employeeId;
     private String employeeName;
-    private String position;
     private String username;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
@@ -29,7 +28,6 @@ public class Employee {
     private Employee(Builder builder) {
         this.employeeId = builder.employeeId;
         this.employeeName = builder.employeeName;
-        this.position = builder.position;
         this.username = builder.username;
         this.password = builder.password;
         this.id = builder.id;
@@ -47,10 +45,6 @@ public class Employee {
         return employeeName;
     }
 
-    public String getPosition() {
-        return position;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -66,9 +60,7 @@ public class Employee {
                 "id=" + id +
                 ", employeeId='" + employeeId + '\'' +
                 ", employeeName='" + employeeName + '\'' +
-                ", position='" + position + '\'' +
                 ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
                 '}';
     }
 
@@ -76,7 +68,6 @@ public class Employee {
 
         private String employeeId;
         private String employeeName;
-        private String position;
         private String username;
         private Long id;
         private String password;
@@ -88,11 +79,6 @@ public class Employee {
 
         public Builder setEmployeeName(String employeeName) {
             this.employeeName = employeeName;
-            return this;
-        }
-
-        public Builder setPosition(String position) {
-            this.position = position;
             return this;
         }
 
@@ -115,7 +101,6 @@ public class Employee {
             this.id = employee.getId();
             this.employeeId = employee.getEmployeeId();
             this.employeeName = employee.getEmployeeName();
-            this.position = employee.getPosition();
             this.username = employee.getUsername();
             this.password = employee.getPassword();
             return this;

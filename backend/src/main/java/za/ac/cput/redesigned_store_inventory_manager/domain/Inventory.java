@@ -19,7 +19,7 @@ public class Inventory {
     @Embedded
     private Category category;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne
     private Product product;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})

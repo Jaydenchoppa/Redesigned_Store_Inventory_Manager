@@ -7,23 +7,25 @@ package za.ac.cput.redesigned_store_inventory_manager.factory;
 import org.junit.jupiter.api.Test;
 import za.ac.cput.redesigned_store_inventory_manager.domain.Product;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ProductFactoryTest {
-    private static Product product,product2;
 
     @Test
     void createProduct() {
-        Product product = ProductFactory.createProduct("1234","Iphone17","R29000");
-        Product product2 = ProductFactory.createProduct("","Iphone17","R29000");
+        Product product = ProductFactory.createProduct("1234", "Iphone17");
 
         assertNotNull(product);
+        assertEquals("1234", product.getProductId());
+        assertEquals("Iphone17", product.getProductName());
         System.out.println(product);
     }
+
     @Test
-    void testProductThatFails(){
-        assertNotNull(product2);
-        System.out.println(product2);
+    void testProductThatFails() {
+        // a blank product ID is invalid, so the factory must refuse to create it
+        Product product2 = ProductFactory.createProduct("", "Iphone17");
+
+        assertNull(product2);
     }
 }
-

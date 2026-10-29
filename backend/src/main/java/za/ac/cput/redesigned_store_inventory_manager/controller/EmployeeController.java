@@ -69,7 +69,6 @@ public class EmployeeController {
             return ResponseEntity.status(409).body("Username already exists");
         }
 
-        String position = clean(employee.getPosition());
         String employeeId = clean(employee.getEmployeeId());
 
         Employee toSave = new Employee.Builder()
@@ -77,7 +76,6 @@ public class EmployeeController {
                         ? "EMP-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase()
                         : employeeId)
                 .setEmployeeName(name)
-                .setPosition(position.isEmpty() ? "Staff" : position)
                 .setUsername(username)
                 .setPassword(passwordEncoder.encode(password))
                 .build();

@@ -24,7 +24,6 @@ public class DataInitializer implements CommandLineRunner {
         if (employeeRepository.findByUsername("admin").isEmpty()) {
             Employee admin = new Employee.Builder()
                     .setEmployeeName("Admin")
-                    .setPosition("Manager")
                     .setUsername("admin")
                     .setPassword(passwordEncoder.encode("admin123"))
                     .build();

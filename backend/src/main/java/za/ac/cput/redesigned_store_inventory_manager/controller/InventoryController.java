@@ -55,12 +55,22 @@ public class InventoryController {
                 .location(inventory.getLocation())
                 .category(inventory.getCategory());
 
-        if (inventory.getSupplier() != null && inventory.getSupplier().getSupplierId() != null) {
-            Supplier resolvedSupplier = supplierRepository.findById(inventory.getSupplier().getSupplierId())
-                    .orElse(inventory.getSupplier());
-            builder.supplier(resolvedSupplier);
+        if (inventory.getProduct() != null
+                && inventory.getProduct().getProductId() != null) {
+
+            Optional<Product> optionalProduct =
+                    productRepository.findById(
+                            inventory.getProduct().getProductId());
+
+            if (optionalProduct.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            Product resolvedProduct = optionalProduct.get();
+            builder.product(resolvedProduct);
+
         } else {
-            builder.supplier(inventory.getSupplier());
+            return ResponseEntity.badRequest().build();
         }
 
         if (inventory.getProduct() != null && inventory.getProduct().getProductId() != null) {

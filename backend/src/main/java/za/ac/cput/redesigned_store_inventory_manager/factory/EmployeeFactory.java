@@ -13,8 +13,7 @@ public class EmployeeFactory {
 
     public static Employee createEmployee(
             String employeeId,
-            String employeeName,
-            String position) {
+            String employeeName) {
 
         if (employeeId == null || employeeId.isBlank())
             return null;
@@ -22,13 +21,9 @@ public class EmployeeFactory {
         if (employeeName == null || employeeName.isBlank())
             return null;
 
-        if (position == null || position.isBlank())
-            return null;
-
         return new Employee.Builder()
                 .setEmployeeId(employeeId)
                 .setEmployeeName(employeeName)
-                .setPosition(position)
                 .build();
     }
 }

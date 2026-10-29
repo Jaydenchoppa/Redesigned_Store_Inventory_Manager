@@ -17,7 +17,6 @@ public class InventoryFormDialog extends JDialog {
     private final Long inventoryId;
     private final boolean updateMode;
 
-    // Existing constructor: Add inventory
     public InventoryFormDialog(
             JFrame parent, ClientApp client, Runnable onSuccess) {
 
