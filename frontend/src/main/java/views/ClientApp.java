@@ -25,7 +25,7 @@ public class ClientApp {
     private static final String ORDER_URL = "http://localhost:8080/api/orders";
     private static final String PURCHASE_URL = "http://localhost:8080/api/purchase";
     private static final String STORE_URL = "http://localhost:8080/api/stores";
-    private static final String PRODUCT_URL = "http://localhost:8080/api/products";
+    private static final String PRODUCT_URL = "http://localhost:8080/api/v1/products";
     private static final String SUPPLIER_URL = "http://localhost:8080/api/v1/supplier";
     private static final String EMPLOYEE_URL = "http://localhost:8080/api/v1/employee";
 

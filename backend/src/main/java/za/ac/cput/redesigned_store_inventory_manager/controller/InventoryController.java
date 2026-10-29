@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import za.ac.cput.redesigned_store_inventory_manager.domain.Inventory;
 import za.ac.cput.redesigned_store_inventory_manager.domain.Product;
 import za.ac.cput.redesigned_store_inventory_manager.domain.Supplier;
+import za.ac.cput.redesigned_store_inventory_manager.repository.InventoryRepository;
 import za.ac.cput.redesigned_store_inventory_manager.repository.ProductRepository;
 import za.ac.cput.redesigned_store_inventory_manager.repository.SupplierRepository;
 import za.ac.cput.redesigned_store_inventory_manager.service.IInventoryService;
@@ -25,14 +26,17 @@ public class InventoryController {
     private final IInventoryService inventoryService;
     private final ProductRepository productRepository;
     private final SupplierRepository supplierRepository;
+    private final InventoryRepository inventoryRepository;
 
     @Autowired
     public InventoryController(IInventoryService inventoryService,
                                ProductRepository productRepository,
-                               SupplierRepository supplierRepository) {
+                               SupplierRepository supplierRepository,
+                               InventoryRepository inventoryRepository) {
         this.inventoryService = inventoryService;
         this.productRepository = productRepository;
         this.supplierRepository = supplierRepository;
+        this.inventoryRepository = inventoryRepository;
     }
 
     @GetMapping
@@ -48,50 +52,67 @@ public class InventoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Inventory> createInventory(@RequestBody Inventory inventory) {
-        Inventory.Builder builder = new Inventory.Builder(inventory.getInventoryId())
+    public ResponseEntity<?> createInventory(@RequestBody Inventory inventory) {
+        if (inventory.getProduct() == null
+                || inventory.getProduct().getProductId() == null
+                || inventory.getProduct().getProductId().isBlank()) {
+            return ResponseEntity.badRequest().body("A Product ID is required.");
+        }
+
+        String productId = inventory.getProduct().getProductId().trim();
+
+        // Resolve the product if it already exists, otherwise register it -
+        // the Add Inventory form collects the product name for exactly this purpose.
+        Product product = productRepository.findById(productId)
+                .orElseGet(() -> {
+                    Product newProduct = new Product();
+                    newProduct.setProductId(productId);
+                    newProduct.setProductName(inventory.getProduct().getProductName());
+                    return productRepository.save(newProduct);
+                });
+
+        // Resolve the supplier by ID. The supplier must already exist -
+        // it can be created on the Suppliers screen.
+        Supplier supplier = null;
+        if (inventory.getSupplier() != null
+                && inventory.getSupplier().getSupplierId() != null
+                && !inventory.getSupplier().getSupplierId().isBlank()) {
+
+            String supplierId = inventory.getSupplier().getSupplierId().trim();
+
+            Optional<Supplier> optionalSupplier = supplierRepository.findById(supplierId);
+            if (optionalSupplier.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Supplier '" + supplierId
+                                + "' was not found. Add the supplier on the Suppliers screen first.");
+            }
+            supplier = optionalSupplier.get();
+        }
+
+        // One inventory record per product.
+        if (inventoryRepository.findByProduct_ProductId(productId).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("That Product ID already exists. Please use a different Product ID.");
+        }
+
+        Inventory resolvedInventory = new Inventory.Builder(inventory.getInventoryId())
+                .product(product)
+                .supplier(supplier)
+                .category(inventory.getCategory())
                 .quantityInStock(inventory.getQuantityInStock())
                 .unitPrice(inventory.getUnitPrice())
                 .location(inventory.getLocation())
-                .category(inventory.getCategory());
-
-        if (inventory.getProduct() != null
-                && inventory.getProduct().getProductId() != null) {
-
-            Optional<Product> optionalProduct =
-                    productRepository.findById(
-                            inventory.getProduct().getProductId());
-
-            if (optionalProduct.isEmpty()) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            Product resolvedProduct = optionalProduct.get();
-            builder.product(resolvedProduct);
-
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
-
-        if (inventory.getProduct() != null && inventory.getProduct().getProductId() != null) {
-            Product resolvedProduct = productRepository.findById(inventory.getProduct().getProductId())
-                    .orElse(inventory.getProduct());
-            builder.product(resolvedProduct);
-        } else {
-            builder.product(inventory.getProduct());
-        }
-
-        Inventory resolvedInventory = builder.build();
+                .build();
 
         Inventory saved = inventoryService.save(resolvedInventory);
         if (saved == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Could not save the inventory item.");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Inventory> updateInventory(
+    public ResponseEntity<?> updateInventory(
             @PathVariable Long id,
             @RequestBody Inventory inventory) {
 
@@ -116,7 +137,8 @@ public class InventoryController {
                     productRepository.findById(inventory.getProduct().getProductId());
 
             if (optionalProduct.isEmpty()) {
-                return ResponseEntity.badRequest().build();
+                return ResponseEntity.badRequest().body("Product '"
+                        + inventory.getProduct().getProductId() + "' was not found.");
             }
 
             Product existingProduct = optionalProduct.get();
@@ -133,14 +155,17 @@ public class InventoryController {
 
         // Reuse the existing supplier if one was supplied
         if (inventory.getSupplier() != null
-                && inventory.getSupplier().getSupplierId() != null) {
+                && inventory.getSupplier().getSupplierId() != null
+                && !inventory.getSupplier().getSupplierId().isBlank()) {
 
             Optional<Supplier> optionalSupplier =
                     supplierRepository.findById(
-                            inventory.getSupplier().getSupplierId());
+                            inventory.getSupplier().getSupplierId().trim());
 
             if (optionalSupplier.isEmpty()) {
-                return ResponseEntity.badRequest().build();
+                return ResponseEntity.badRequest().body("Supplier '"
+                        + inventory.getSupplier().getSupplierId()
+                        + "' was not found. Add the supplier on the Suppliers screen first.");
             }
 
             existing.setSupplier(optionalSupplier.get());

@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import za.ac.cput.redesigned_store_inventory_manager.domain.Inventory;
 
+import java.util.Optional;
+
 /**
  *
  * @author Jayden
@@ -16,4 +18,5 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>{
             "WHERE i.inventoryId = :id AND i.quantityInStock >= :qty")
     int decrementStock(@Param("id") Long id, @Param("qty") int qty);
 
+    Optional<Inventory> findByProduct_ProductId(String productId);
 }
