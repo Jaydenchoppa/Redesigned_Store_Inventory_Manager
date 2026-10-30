@@ -10,6 +10,8 @@ import za.ac.cput.redesigned_store_inventory_manager.repository.EmployeeReposito
 @Component
 public class DataInitializer implements CommandLineRunner {
 
+    private static final String ADMIN_EMPLOYEE_ID = "EMP-ADMIN";
+
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -21,13 +23,23 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (employeeRepository.findByUsername("admin").isEmpty()) {
+        Employee existing = employeeRepository.findByUsername("admin").orElse(null);
+
+        if (existing == null) {
             Employee admin = new Employee.Builder()
+                    .setEmployeeId(ADMIN_EMPLOYEE_ID)
                     .setEmployeeName("Admin")
                     .setUsername("admin")
                     .setPassword(passwordEncoder.encode("admin123"))
                     .build();
             employeeRepository.save(admin);
+
+        } else if (existing.getEmployeeId() == null || existing.getEmployeeId().isBlank()) {
+            // admin was created before it had an employee ID - fill it in
+            employeeRepository.save(new Employee.Builder()
+                    .copy(existing)
+                    .setEmployeeId(ADMIN_EMPLOYEE_ID)
+                    .build());
         }
     }
 }
